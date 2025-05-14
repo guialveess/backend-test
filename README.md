@@ -1,98 +1,145 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Backend Test - NestJS + DynamoDB
+O projeto foi desenvolvido como parte de um desafio técnico para backend, com o objetivo de implementar uma API RESTful utilizando **Node.js (com NestJS)** e banco de dados **DynamoDB**, aplicando regras de negócio e estrutura escalável.
+---
+## 🚀 O que foi implementado
+A API permite gerenciar os seguintes recursos:
+### 1. **Usuários (Users)**
+- Campos: `id`, `name`, `email`, `type` (`owner` ou `customer`)
+- Funcionalidades:
+  - Criar, buscar por ID, listar, atualizar e deletar
+  - Apenas `type: "owner"` pode ser dono de estabelecimento
+### 2. **Estabelecimentos (Establishments)**
+- Campos: `id`, `name`, `ownerId`, `type` (`shopping` ou `local`)
+- Funcionalidades:
+  - CRUD completo
+  - Verificação automática se o `ownerId` pertence a um usuário do tipo `owner`
+### 3. **Regras de Estabelecimento (EstablishmentRules)**
+- Campos: `id`, `establishmentId`, `picturesLimit`, `videoLimit`
+- Funcionalidades:
+  - Criar regras para controlar limites de produtos
+  - Buscar por `establishmentId`, atualizar e deletar
+### 4. **Produtos (Products)**
+- Campos: `id`, `name`, `price`, `establishmentId`
+- Funcionalidades:
+  - CRUD completo
+  - Validação se o estabelecimento existe antes de criar
+> Todos os endpoints foram documentados no Swagger.
+---
+## 🔧 Tecnologias
+- **Node.js** com **NestJS** (estrutura modular e escalável)
+- **DynamoDB Local** via Docker
+- **AWS SDK v3** para integração com Dynamo
+- **UUID** para geração de IDs únicos
+- **Swagger** para documentação automática da API
+- **Dotenv** para gerenciamento de variáveis de ambiente
+- **Vitest** para teste unitário (atualmente apenas para User)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
+---
+## 📝 Regras de Negócio
+- Um usuário **só pode criar um estabelecimento** se for do tipo `"owner"`
+- Um produto **só pode ser criado** se o `establishmentId` for válido
+- As regras por estabelecimento (`EstablishmentRules`) controlam limites futuros (base para extensibilidade)
+---
+## Como rodar o projeto localmente
+### 1. Clonar o repositório
 ```bash
-$ yarn install
+git clone https://github.com/guialveess/backend-test
+cd backend-test
 ```
 
-## Compile and run the project
-
+### 2. Instalar dependências
 ```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+npm install
 ```
 
-## Run tests
-
+### 3. Rodar o DynamoDB local via Docker
 ```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+docker run -d -p 8000:8000 --name dynamodb-local amazon/dynamodb-local
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+### 4. Criar as tabelas
 ```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+npx ts-node src/database/create-users-table.ts
+npx ts-node src/database/create-establishments-table.ts
+npx ts-node src/database/create-establishment-rules-table.ts
+npx ts-node src/database/create-products-table.ts
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 5. Rodar o servidor NestJS
+```bash
+npm run start:dev
+```
 
-## Resources
+A API estará disponível em:
+- 📍 http://localhost:3000
+- 📚 Swagger: http://localhost:3000/api
 
-Check out a few resources that may come in handy when working with NestJS:
+---
+## Endpoints da API
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Usuários
+- `POST /users` - Criar usuário
+- `GET /users` - Listar todos usuários
+- `GET /users/:id` - Buscar usuário por ID
+- `PUT /users/:id` - Atualizar usuário
+- `DELETE /users/:id` - Deletar usuário
 
-## Support
+### Estabelecimentos
+- `POST /establishments` - Criar estabelecimento
+- `GET /establishments` - Listar todos estabelecimentos
+- `GET /establishments/:id` - Buscar estabelecimento por ID
+- `PUT /establishments/:id` - Atualizar estabelecimento
+- `DELETE /establishments/:id` - Deletar estabelecimento
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Regras de Estabelecimento
+- `POST /establishment-rules` - Criar regras
+- `GET /establishment-rules/:establishmentId` - Buscar regras por ID do estabelecimento
+- `PUT /establishment-rules/:id` - Atualizar regras
+- `DELETE /establishment-rules/:id` - Deletar regras
 
-## Stay in touch
+### Produtos
+- `POST /products` - Criar produto
+- `GET /products` - Listar todos produtos
+- `GET /products/:id` - Buscar produto por ID
+- `GET /products/establishment/:establishmentId` - Buscar produtos por estabelecimento
+- `PUT /products/:id` - Atualizar produto
+- `DELETE /products/:id` - Deletar produto
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
+## 🧪 Testes
+O projeto utiliza o **Vitest** para o teste unitário, com foco atual no módulo de usuários:
 
-## License
+```bash
+# Executar testes com interface visual
+npx vitest --ui
+# A UI será disponibilizada em: http://localhost:51204/__vitest__/
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Resultado dos testes
+```
+ DEV  v3.1.3 /home/guiaalves/Área de trabalho/www/backend-test
+      UI started at http://localhost:51204/__vitest__/
+ ✓ src/app.controller.spec.ts (1 test) 4ms
+ ✓ src/user/user.service.spec.ts (5 tests) 12ms
+ ✓ src/user/user.controller.spec.ts (1 test) 17ms
+ Test Files  3 passed (3)
+      Tests  7 passed (7)
+   Start at  13:54:57
+   Duration  989ms (transform 226ms, setup 241ms, collect 1.43s, tests 33ms, environment 1ms, prepare 476ms)
+```
+
+---
+## Roadmap e Melhorias Futuras
+- [ ] Implementar autenticação JWT
+- [ ] Adicionar validações adicionais nos endpoints
+- [ ] Implementar paginação nas listagens
+- [ ] Criar mais testes unitários e de integração
+- [ ] Adicionar CI/CD pipeline
+- [ ] Implementar monitoramento e logging
+
+---
+## 📄 Licença
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
+Desenvolvido por [Guilherme Alves](https://github.com/guialveess) 👨‍💻
