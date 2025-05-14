@@ -77,6 +77,11 @@ A API estará disponível em:
 ---
 ## Endpoints da API
 
+<p align="center">
+  <img src="https://dodmpt859u.ufs.sh/f/996SGypRyFDzrz1aQxPTory62VGYuDsI8ipnbjm3etRfLUh0" alt="Preview do Projeto" />
+</p>
+
+
 ### Usuários
 - `POST /users` - Criar usuário
 - `GET /users` - Listar todos usuários
