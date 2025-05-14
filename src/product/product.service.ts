@@ -20,7 +20,6 @@ export class ProductService {
   async create(dto: CreateProductDto) {
     const { establishmentId } = dto;
 
-    // ⚠️ Valida se o estabelecimento existe
     const establishment = await this.dynamo.send(
       new GetCommand({
         TableName: this.establishmentTable,
@@ -32,7 +31,7 @@ export class ProductService {
       throw new NotFoundException('Establishment não encontrado');
     }
 
-    // TODO: Adicionar regra de negócio usando EstablishmentRules futuramente
+    // adicionar regra de negócio usando EstablishmentRules futuramente
 
     const product = { id: uuidv4(), ...dto };
     await this.dynamo.send(new PutCommand({ TableName: this.tableName, Item: product }));
